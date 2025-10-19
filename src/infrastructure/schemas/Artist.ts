@@ -53,6 +53,10 @@ const ArtistSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  featured: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const Artist = mongoose.model("Artist", ArtistSchema);

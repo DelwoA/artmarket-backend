@@ -28,6 +28,7 @@ export const createArtistDTO = z.object({
   website: z.string().url().optional(),
   instagram: z.string().url().optional(),
   facebook: z.string().url(),
+  featured: z.boolean().optional(),
 });
 
 // Export CreateArtistDTO TypeScript type inferred from the Zod schemas
@@ -61,6 +62,7 @@ export const updateArtistDTO = z.object({
   website: z.string().url().optional(),
   instagram: z.string().url().optional(),
   facebook: z.string().url(),
+  featured: z.boolean().optional(),
 });
 
 // Export UpdateArtistDTO TypeScript type inferred from the Zod schemas
