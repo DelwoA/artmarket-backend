@@ -1,8 +1,8 @@
 import express from "express";
-import { getAllArtists } from "../application/artist";
+import { createArtist, getAllArtists } from "../application/artist";
 
 const artistsRouter = express.Router();
 
-artistsRouter.route("/").get(getAllArtists);
+artistsRouter.route("/").get(getAllArtists).post(createArtist);
 
 export default artistsRouter;
