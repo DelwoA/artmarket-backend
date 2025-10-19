@@ -1,0 +1,33 @@
+import { z } from "zod";
+
+export const createArtDTO = z.object({
+  title: z.string().min(1),
+  artistName: z.string().min(1),
+  description: z.string().min(1),
+  price: z.number().positive(),
+  image: z.string().min(1),
+  availability: z.enum(["For Sale", "Not for Sale", "Sold"]),
+  likes: z.number().optional(),
+  views: z.number().optional(),
+  comments: z.number().optional(),
+  featured: z.boolean().optional(),
+});
+
+// Export CreateArtDTO TypeScript type inferred from the Zod schemas
+export type CreateArtDTO = z.infer<typeof createArtDTO>;
+
+export const updateArtDTO = z.object({
+  title: z.string().min(1),
+  artistName: z.string().min(1),
+  description: z.string().min(1),
+  price: z.number().positive(),
+  image: z.string().min(1),
+  availability: z.enum(["For Sale", "Not for Sale", "Sold"]),
+  likes: z.number().optional(),
+  views: z.number().optional(),
+  comments: z.number().optional(),
+  featured: z.boolean().optional(),
+});
+
+// Export UpdateArtDTO TypeScript type inferred from the Zod schemas
+export type UpdateArtDTO = z.infer<typeof updateArtDTO>;

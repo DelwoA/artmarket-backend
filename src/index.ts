@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import connectDB from "./infrastructure/db";
+import globalErrorHandlingMiddleware from "./api/middleware/global-error-handling-middleware";
 import corsMiddleware from "./api/middleware/cors";
 import { clerkMiddleware } from "@clerk/express";
 
@@ -22,3 +23,15 @@ connectDB();
 
 // Register API routes
 app.use("/api/artists", artistsRouter);
+
+// Register global error handling middleware
+app.use(globalErrorHandlingMiddleware);
+
+// Export the app for Vercel deployment
+export default app;
+
+// For local development
+if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.PORT || 8000;
+  app.listen(PORT, () => console.log(`Server is running on port ${PORT}...`));
+}
