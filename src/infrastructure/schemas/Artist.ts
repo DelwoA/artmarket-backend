@@ -11,10 +11,6 @@ const ArtistSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  email: {
-    type: String,
-    required: true,
-  },
   bio: {
     type: String,
     required: true,
@@ -46,6 +42,14 @@ const ArtistSchema = new mongoose.Schema({
   city: {
     type: String,
     required: true,
+  },
+  totalLikes: {
+    type: Number,
+    default: 0,
+  },
+  totalViews: {
+    type: Number,
+    default: 0,
   },
   website: {
     type: String,
