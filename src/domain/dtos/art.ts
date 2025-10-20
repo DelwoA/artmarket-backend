@@ -4,6 +4,15 @@ export const createArtDTO = z.object({
   title: z.string().min(1),
   artistName: z.string().min(1),
   description: z.string().min(1),
+  //   TODO: Research and use accurate proper art categories
+  category: z.enum([
+    "Painting",
+    "Sculpture",
+    "Photography",
+    "Mixed Media",
+    "Digital Art",
+    "Other",
+  ]),
   price: z.number().positive(),
   image: z.string().min(1),
   availability: z.enum(["For Sale", "Not for Sale", "Sold"]),
