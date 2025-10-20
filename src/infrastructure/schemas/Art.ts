@@ -5,7 +5,7 @@ const ArtSchema = new mongoose.Schema({
   artId: {
     type: String,
     unique: true,
-    required: true,
+    index: true,
   },
   title: {
     type: String,

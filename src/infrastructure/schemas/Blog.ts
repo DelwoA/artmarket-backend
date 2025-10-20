@@ -5,7 +5,7 @@ const BlogSchema = new mongoose.Schema({
   blogId: {
     type: String,
     unique: true,
-    required: true,
+    index: true,
   },
   title: {
     type: String,

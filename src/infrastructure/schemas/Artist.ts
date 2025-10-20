@@ -5,7 +5,7 @@ const ArtistSchema = new mongoose.Schema({
   artistId: {
     type: String,
     unique: true,
-    required: true,
+    index: true,
   },
   name: {
     type: String,
