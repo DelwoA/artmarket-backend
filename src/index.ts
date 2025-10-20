@@ -6,6 +6,8 @@ import corsMiddleware from "./api/middleware/cors";
 import { clerkMiddleware } from "@clerk/express";
 
 import artistsRouter from "./api/artist";
+import artsRouter from "./api/art";
+import blogsRouter from "./api/blog";
 
 const app = express();
 
@@ -23,6 +25,8 @@ connectDB();
 
 // Register API routes
 app.use("/api/artists", artistsRouter);
+app.use("/api/arts", artsRouter);
+app.use("/api/blogs", blogsRouter);
 
 // Register global error handling middleware
 app.use(globalErrorHandlingMiddleware);
