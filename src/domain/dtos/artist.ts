@@ -2,7 +2,6 @@ import { z } from "zod";
 
 export const createArtistDTO = z.object({
   name: z.string().min(1),
-  email: z.string().email(),
   bio: z.string().min(1),
   country: z.enum([
     "Australia",
@@ -25,8 +24,10 @@ export const createArtistDTO = z.object({
     "United States",
   ]),
   city: z.string().min(1),
-  website: z.string().url().optional(),
-  instagram: z.string().url().optional(),
+  totalLikes: z.number(),
+  totalViews: z.number(),
+  website: z.string().url(),
+  instagram: z.string().url(),
   facebook: z.string().url(),
   featured: z.boolean().optional(),
 });
@@ -36,7 +37,6 @@ export type CreateArtistDTO = z.infer<typeof createArtistDTO>;
 
 export const updateArtistDTO = z.object({
   name: z.string().min(1),
-  email: z.string().email(),
   bio: z.string().min(1),
   country: z.enum([
     "Australia",
@@ -59,8 +59,10 @@ export const updateArtistDTO = z.object({
     "United States",
   ]),
   city: z.string().min(1),
-  website: z.string().url().optional(),
-  instagram: z.string().url().optional(),
+  totalLikes: z.number(),
+  totalViews: z.number(),
+  website: z.string().url(),
+  instagram: z.string().url(),
   facebook: z.string().url(),
   featured: z.boolean().optional(),
 });

@@ -1,6 +1,12 @@
 import mongoose from "mongoose";
+import Counter from "../counter.model";
 
 const ArtSchema = new mongoose.Schema({
+  artId: {
+    type: String,
+    unique: true,
+    required: true,
+  },
   title: {
     type: String,
     required: true,
@@ -60,6 +66,28 @@ const ArtSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+});
+
+// PRE-SAVE HOOK → assign the next 4-digit art ID automatically
+// This is a pre-save hook that will be executed before the art is saved to the database
+ArtSchema.pre("save", async function (next) {
+  // Skip if we already have an artId (e.g. on updates)
+  if (this.artId) return next();
+
+  try {
+    const counter = await Counter.findOneAndUpdate(
+      { _id: "artId" }, // sequence key
+      { $inc: { seq: 1 } }, // atomically increment
+      { new: true, upsert: true }
+    );
+
+    // counter.seq will be 1, 2, 3, …
+    // Format as 5-digit padded number: "00001", "00002", "00003"
+    this.artId = counter.seq.toString().padStart(5, "0");
+    next();
+  } catch (error) {
+    next(error instanceof Error ? error : new Error(String(error)));
+  }
 });
 
 const Art = mongoose.model("Art", ArtSchema);
