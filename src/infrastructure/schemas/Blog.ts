@@ -11,6 +11,12 @@ const BlogSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  subtitle: {
+    type: String,
+    required: true,
+    maxlength: 160,
+    trim: true,
+  },
   artistName: {
     type: String,
     required: true,
