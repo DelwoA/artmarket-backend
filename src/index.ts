@@ -15,6 +15,7 @@ const app = express();
 app.use(clerkMiddleware());
 
 // Middleware to parse JSON data in the request body
+// TODO: Implement authorization in the backend
 app.use(express.json());
 
 // Setup CORS logic

@@ -4,6 +4,7 @@ import { createArtDTO, updateArtDTO } from "../domain/dtos/art";
 
 import NotFoundError from "../domain/errors/not-found-error";
 import ValidationError from "../domain/errors/validation-error";
+import { getAuth } from "@clerk/express";
 
 export const getAllArts = async (
   req: Request,
@@ -108,6 +109,50 @@ export const deleteArt = async (
 
     // Return the response
     res.status(200).send("Art deleted successfully");
+    return;
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const toggleLikeArt = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const artId = req.params.id;
+    const auth = getAuth(req);
+    const userId = auth?.userId;
+
+    if (!userId) {
+      throw new ValidationError("User not authenticated");
+    }
+
+    // First try to like (add if not present)
+    const addResult = await Art.updateOne(
+      { _id: artId, likedBy: { $ne: userId } },
+      { $addToSet: { likedBy: userId }, $inc: { likes: 1 } }
+    );
+
+    if (!addResult.modifiedCount) {
+      // If nothing added, try to unlike (remove if present)
+      await Art.updateOne(
+        { _id: artId, likedBy: userId },
+        { $pull: { likedBy: userId }, $inc: { likes: -1 } }
+      );
+    }
+
+    const updated = await Art.findById(artId);
+    if (!updated) {
+      throw new NotFoundError("Art not found");
+    }
+
+    const liked = Array.isArray((updated as any).likedBy)
+      ? (updated as any).likedBy.includes(userId)
+      : false;
+
+    res.status(200).json({ likes: updated.likes ?? 0, liked });
     return;
   } catch (error) {
     next(error);

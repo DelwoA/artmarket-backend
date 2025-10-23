@@ -19,6 +19,7 @@ export const createArtDTO = z.object({
   likes: z.number().optional(),
   views: z.number().optional(),
   comments: z.number().optional(),
+  likedBy: z.array(z.string()).optional(),
   featured: z.boolean().optional(),
 });
 
@@ -35,6 +36,7 @@ export const updateArtDTO = z.object({
   likes: z.number().optional(),
   views: z.number().optional(),
   comments: z.number().optional(),
+  likedBy: z.array(z.string()).optional(),
   featured: z.boolean().optional(),
 });
 

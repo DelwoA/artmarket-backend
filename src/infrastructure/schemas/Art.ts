@@ -62,6 +62,10 @@ const ArtSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  likedBy: {
+    type: [String],
+    default: [],
+  },
   featured: {
     type: Boolean,
     default: false,
