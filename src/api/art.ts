@@ -1,5 +1,10 @@
 import express from "express";
-import { createArt, getAllArts, toggleLikeArt } from "../application/art";
+import {
+  createArt,
+  getAllArts,
+  toggleLikeArt,
+  incrementArtView,
+} from "../application/art";
 import {
   createComment,
   deleteComment,
@@ -11,6 +16,7 @@ const artsRouter = express.Router();
 
 artsRouter.route("/").get(getAllArts).post(createArt);
 artsRouter.post("/:id/like", isAuthenticated, toggleLikeArt);
+artsRouter.post("/:id/view", incrementArtView);
 artsRouter.route("/:id/comments").get(getCommentsByArt).post(createComment);
 artsRouter
   .route("/:id/comments/:commentId")

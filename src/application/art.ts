@@ -158,3 +158,25 @@ export const toggleLikeArt = async (
     next(error);
   }
 };
+
+export const incrementArtView = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const artId = req.params.id;
+    const updated = await Art.findByIdAndUpdate(
+      artId,
+      { $inc: { views: 1 } },
+      { new: true }
+    );
+    if (!updated) {
+      throw new NotFoundError("Art not found");
+    }
+    res.status(200).json({ views: Number(updated.views ?? 0) });
+    return;
+  } catch (error) {
+    next(error);
+  }
+};
