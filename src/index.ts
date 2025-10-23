@@ -8,6 +8,7 @@ import { clerkMiddleware } from "@clerk/express";
 import artistsRouter from "./api/artist";
 import artsRouter from "./api/art";
 import blogsRouter from "./api/blog";
+import homepageRouter from "./api/homepage";
 
 const app = express();
 
@@ -28,6 +29,7 @@ connectDB();
 app.use("/api/artists", artistsRouter);
 app.use("/api/arts", artsRouter);
 app.use("/api/blogs", blogsRouter);
+app.use("/api/homepage", homepageRouter);
 
 // Register global error handling middleware
 app.use(globalErrorHandlingMiddleware);
