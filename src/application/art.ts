@@ -12,7 +12,7 @@ export const getAllArts = async (
   next: NextFunction
 ) => {
   try {
-    const arts = await Art.find();
+    const arts = await Art.find({ visible: true });
     res.status(200).json(arts);
     return;
   } catch (error) {
@@ -35,7 +35,7 @@ export const createArt = async (
     }
 
     // Create the art
-    const art = await Art.create(createdArt.data);
+    const art = await Art.create({ ...createdArt.data, visible: true });
 
     // Return the response
     res.status(201).json(art);
@@ -175,6 +175,65 @@ export const incrementArtView = async (
       throw new NotFoundError("Art not found");
     }
     res.status(200).json({ views: Number(updated.views ?? 0) });
+    return;
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Admin list arts, optional visible filter
+export const getAdminArts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { visible } = req.query as { visible?: string };
+    const filter: any = {};
+    if (visible === "true") filter.visible = true;
+    if (visible === "false") filter.visible = false;
+    const arts = await Art.find(filter).sort({ _id: -1 });
+    res.status(200).json(arts);
+    return;
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const banArt = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const id = req.params.id;
+    const art = await Art.findByIdAndUpdate(
+      id,
+      { visible: false },
+      { new: true }
+    );
+    if (!art) throw new NotFoundError("Art not found");
+    res.status(200).json(art);
+    return;
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const unbanArt = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const id = req.params.id;
+    const art = await Art.findByIdAndUpdate(
+      id,
+      { visible: true },
+      { new: true }
+    );
+    if (!art) throw new NotFoundError("Art not found");
+    res.status(200).json(art);
     return;
   } catch (error) {
     next(error);

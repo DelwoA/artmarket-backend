@@ -7,6 +7,23 @@ const BlogSchema = new mongoose.Schema({
     unique: true,
     index: true,
   },
+  clerkUserId: {
+    type: String,
+    required: true,
+    index: true,
+  },
+  status: {
+    type: String,
+    enum: ["pending", "approved", "rejected"],
+    default: "pending",
+    index: true,
+  },
+  rejectionReason: {
+    type: String,
+  },
+  publishedAt: {
+    type: Date,
+  },
   title: {
     type: String,
     required: true,

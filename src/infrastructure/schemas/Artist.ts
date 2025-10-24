@@ -7,6 +7,27 @@ const ArtistSchema = new mongoose.Schema({
     unique: true,
     index: true,
   },
+  clerkUserId: {
+    type: String,
+    required: true,
+    index: true,
+  },
+  status: {
+    type: String,
+    enum: ["pending", "approved", "rejected"],
+    default: "pending",
+    index: true,
+  },
+  rejectionReason: {
+    type: String,
+  },
+  submittedAt: {
+    type: Date,
+    default: () => new Date(),
+  },
+  approvedAt: {
+    type: Date,
+  },
   name: {
     type: String,
     required: true,

@@ -4,6 +4,7 @@ import { createArtistDTO, updateArtistDTO } from "../domain/dtos/artist";
 
 import NotFoundError from "../domain/errors/not-found-error";
 import ValidationError from "../domain/errors/validation-error";
+import { getAuth, clerkClient } from "@clerk/express";
 
 export const getAllArtists = async (
   req: Request,
@@ -11,7 +12,7 @@ export const getAllArtists = async (
   next: NextFunction
 ) => {
   try {
-    const artists = await Artist.find();
+    const artists = await Artist.find({ status: "approved" });
     res.status(200).json(artists);
     return;
   } catch (error) {
@@ -110,6 +111,131 @@ export const deleteArtist = async (
 
     // Return the response
     res.status(200).send("Artist deleted successfully");
+    return;
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Artist application by authenticated user
+export const applyArtist = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const auth = getAuth(req);
+    const userId = auth?.userId;
+    if (!userId) {
+      throw new ValidationError("User not authenticated");
+    }
+
+    // Minimal validation of profile fields using createArtistDTO shape minus counters
+    const parsed = createArtistDTO.safeParse({
+      ...req.body,
+      totalLikes: Number(req.body?.totalLikes ?? 0),
+      totalViews: Number(req.body?.totalViews ?? 0),
+    });
+    if (!parsed.success) {
+      throw new ValidationError("Invalid artist data");
+    }
+
+    const payload = parsed.data as any;
+
+    // Upsert by clerkUserId: allow resubmission to update details, reset status to pending
+    const artist = await Artist.findOneAndUpdate(
+      { clerkUserId: userId },
+      {
+        ...payload,
+        clerkUserId: userId,
+        status: "pending",
+        submittedAt: new Date(),
+        $unset: { approvedAt: 1, rejectionReason: 1 },
+      },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    );
+
+    res.status(200).json(artist);
+    return;
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Admin list artists by status
+export const getAdminArtists = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { status } = req.query as { status?: string };
+    const filter: any = {};
+    if (status && ["pending", "approved", "rejected"].includes(status)) {
+      filter.status = status;
+    }
+    const artists = await Artist.find(filter).sort({
+      submittedAt: -1,
+      approvedAt: -1,
+    });
+    res.status(200).json(artists);
+    return;
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const approveArtist = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const id = req.params.id;
+    const artist = await Artist.findByIdAndUpdate(
+      id,
+      {
+        status: "approved",
+        approvedAt: new Date(),
+        $unset: { rejectionReason: 1 },
+      },
+      { new: true }
+    );
+    if (!artist) throw new NotFoundError("Artist not found");
+
+    // Update Clerk role to artist
+    if ((artist as any).clerkUserId) {
+      await clerkClient.users.updateUser((artist as any).clerkUserId, {
+        publicMetadata: { role: "artist" },
+      });
+    }
+
+    res.status(200).json(artist);
+    return;
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const rejectArtist = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const id = req.params.id;
+    const { reason } = req.body as { reason?: string };
+    const artist = await Artist.findByIdAndUpdate(
+      id,
+      {
+        status: "rejected",
+        rejectionReason: reason,
+        $unset: { approvedAt: 1 },
+      },
+      { new: true }
+    );
+    if (!artist) throw new NotFoundError("Artist not found");
+    res.status(200).json(artist);
     return;
   } catch (error) {
     next(error);

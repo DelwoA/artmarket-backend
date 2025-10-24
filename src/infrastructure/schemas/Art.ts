@@ -7,6 +7,10 @@ const ArtSchema = new mongoose.Schema({
     unique: true,
     index: true,
   },
+  visible: {
+    type: Boolean,
+    default: true,
+  },
   title: {
     type: String,
     required: true,
