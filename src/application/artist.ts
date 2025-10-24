@@ -142,20 +142,37 @@ export const applyArtist = async (
 
     const payload = parsed.data as any;
 
-    // Upsert by clerkUserId: allow resubmission to update details, reset status to pending
-    const artist = await Artist.findOneAndUpdate(
-      { clerkUserId: userId },
-      {
-        ...payload,
-        clerkUserId: userId,
-        status: "pending",
-        submittedAt: new Date(),
-        $unset: { approvedAt: 1, rejectionReason: 1 },
-      },
-      { new: true, upsert: true, setDefaultsOnInsert: true }
-    );
+    // Check whether the user has already applied.
+    const existing = await Artist.findOne({ clerkUserId: userId });
 
-    res.status(200).json(artist);
+    if (existing) {
+      // Update existing application details and reset status to pending.
+      const updated = await Artist.findOneAndUpdate(
+        { clerkUserId: userId },
+        {
+          ...payload,
+          status: "pending",
+          submittedAt: new Date(),
+          $unset: { approvedAt: 1, rejectionReason: 1 },
+        },
+        { new: true }
+      );
+
+      res.status(200).json(updated);
+      return;
+    }
+
+    // Create a new application. Use save() so the pre-save hook assigns artistId.
+    const created = new Artist({
+      ...payload,
+      clerkUserId: userId,
+      status: "pending",
+      submittedAt: new Date(),
+    });
+
+    await created.save();
+
+    res.status(200).json(created);
     return;
   } catch (error) {
     next(error);

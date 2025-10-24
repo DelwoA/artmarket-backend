@@ -16,7 +16,7 @@ const artistsRouter = express.Router();
 artistsRouter.route("/").get(getAllArtists).post(createArtist);
 
 // Artist application (authenticated user)
-artistsRouter.route("/apply").post(applyArtist);
+artistsRouter.route("/apply").post(isAuthenticated, applyArtist);
 
 // Admin endpoints
 artistsRouter.route("/admin").get(getAdminArtists);
