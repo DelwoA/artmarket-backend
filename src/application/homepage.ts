@@ -28,16 +28,24 @@ export const updateHomepageConfig: RequestHandler = async (req, res, next) => {
       featuredBlogIds: string[];
     }>;
 
+    const clampUnique = (ids: unknown[], max: number) => {
+      const seen = new Set<string>();
+      const result: string[] = [];
+      for (const raw of Array.isArray(ids) ? ids : []) {
+        const id = String(raw);
+        if (!seen.has(id)) {
+          seen.add(id);
+          result.push(id);
+          if (result.length >= max) break;
+        }
+      }
+      return result;
+    };
+
     const payload = {
-      featuredArtistIds: Array.isArray(body.featuredArtistIds)
-        ? body.featuredArtistIds.map(String)
-        : [],
-      featuredArtIds: Array.isArray(body.featuredArtIds)
-        ? body.featuredArtIds.map(String)
-        : [],
-      featuredBlogIds: Array.isArray(body.featuredBlogIds)
-        ? body.featuredBlogIds.map(String)
-        : [],
+      featuredArtistIds: clampUnique(body.featuredArtistIds ?? [], 4),
+      featuredArtIds: clampUnique(body.featuredArtIds ?? [], 8),
+      featuredBlogIds: clampUnique(body.featuredBlogIds ?? [], 6),
     };
 
     const doc = await HomeConfig.findOneAndUpdate({}, payload, {
