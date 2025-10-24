@@ -16,16 +16,11 @@ const artistsRouter = express.Router();
 artistsRouter.route("/").get(getAllArtists).post(createArtist);
 
 // Artist application (authenticated user)
-artistsRouter.post("/apply", isAuthenticated, applyArtist);
+artistsRouter.route("/apply").post(applyArtist);
 
 // Admin endpoints
-artistsRouter.get("/admin", isAuthenticated, isAdmin, getAdminArtists);
-artistsRouter.put(
-  "/admin/:id/approve",
-  isAuthenticated,
-  isAdmin,
-  approveArtist
-);
-artistsRouter.put("/admin/:id/reject", isAuthenticated, isAdmin, rejectArtist);
+artistsRouter.route("/admin").get(getAdminArtists);
+artistsRouter.route("/admin/:id/approve").put(isAdmin, approveArtist);
+artistsRouter.route("/admin/:id/reject").put(isAdmin, rejectArtist);
 
 export default artistsRouter;
