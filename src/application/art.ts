@@ -12,7 +12,25 @@ export const getAllArts = async (
   next: NextFunction
 ) => {
   try {
-    const arts = await Art.find({ visible: true });
+    const { category } = req.query as { category?: string };
+    const filter: Record<string, unknown> = { visible: true };
+
+    if (typeof category === "string" && category.trim()) {
+      // Validate against allowed categories to avoid invalid values
+      const allowed = new Set([
+        "Painting",
+        "Sculpture",
+        "Photography",
+        "Mixed Media",
+        "Digital Art",
+        "Other",
+      ]);
+      if (allowed.has(category)) {
+        filter.category = category;
+      }
+    }
+
+    const arts = await Art.find(filter);
     res.status(200).json(arts);
     return;
   } catch (error) {
