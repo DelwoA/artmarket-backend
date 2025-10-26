@@ -5,6 +5,7 @@ import { createBlogDTO, updateBlogDTO } from "../domain/dtos/blog";
 import NotFoundError from "../domain/errors/not-found-error";
 import ValidationError from "../domain/errors/validation-error";
 import { getAuth } from "@clerk/express";
+import Artist from "../infrastructure/schemas/Artist";
 
 export const getAllBlogs = async (
   req: Request,
@@ -34,12 +35,25 @@ export const createBlog = async (
       throw new ValidationError("Invalid blog data");
     }
 
+    // Derive artist name from authenticated approved artist
+    const auth = getAuth(req);
+    const userId = auth?.userId;
+    if (!userId) throw new ValidationError("User not authenticated");
+
+    const artist = await Artist.findOne({
+      clerkUserId: userId,
+      status: "approved",
+    });
+    if (!artist)
+      throw new ValidationError("Artist profile not found or not approved");
+
     // Create the blog with pending status and clerk user linkage
     const body = createdBlog.data as any;
     const blog = await Blog.create({
       ...body,
+      artistName: (artist as any).name,
       status: "pending",
-      clerkUserId: getAuth(req)?.userId,
+      clerkUserId: userId,
     });
 
     // Return the response

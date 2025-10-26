@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import Art from "../infrastructure/schemas/Art";
 import { createArtDTO, updateArtDTO } from "../domain/dtos/art";
+import Artist from "../infrastructure/schemas/Artist";
 
 import NotFoundError from "../domain/errors/not-found-error";
 import ValidationError from "../domain/errors/validation-error";
@@ -52,8 +53,24 @@ export const createArt = async (
       throw new ValidationError("Invalid art data");
     }
 
+    // Derive artistName from authenticated approved artist
+    const auth = getAuth(req);
+    const userId = auth?.userId;
+    if (!userId) throw new ValidationError("User not authenticated");
+
+    const artist = await Artist.findOne({
+      clerkUserId: userId,
+      status: "approved",
+    });
+    if (!artist)
+      throw new ValidationError("Artist profile not found or not approved");
+
     // Create the art
-    const art = await Art.create({ ...createdArt.data, visible: true });
+    const art = await Art.create({
+      ...createdArt.data,
+      artistName: (artist as any).name,
+      visible: true,
+    });
 
     // Return the response
     res.status(201).json(art);

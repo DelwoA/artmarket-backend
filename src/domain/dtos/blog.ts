@@ -3,7 +3,6 @@ import { z } from "zod";
 export const createBlogDTO = z.object({
   title: z.string().min(1),
   subtitle: z.string().min(1).max(160),
-  artistName: z.string().min(1),
   description: z.string().min(1),
   image: z.string().min(1),
   views: z.number().optional(),
@@ -16,7 +15,7 @@ export type CreateBlogDTO = z.infer<typeof createBlogDTO>;
 export const updateBlogDTO = z.object({
   title: z.string().min(1),
   subtitle: z.string().min(1).max(160),
-  artistName: z.string().min(1),
+  artistName: z.string().min(1).optional(),
   description: z.string().min(1),
   image: z.string().min(1),
   views: z.number().optional(),

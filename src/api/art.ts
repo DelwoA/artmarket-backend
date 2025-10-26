@@ -18,7 +18,7 @@ import { isAdmin } from "./middleware/authorization-middleware";
 
 const artsRouter = express.Router();
 
-artsRouter.route("/").get(getAllArts).post(createArt);
+artsRouter.route("/").get(getAllArts).post(isAuthenticated, createArt);
 artsRouter.post("/:id/like", isAuthenticated, toggleLikeArt);
 artsRouter.post("/:id/view", incrementArtView);
 artsRouter.route("/:id/comments").get(getCommentsByArt).post(createComment);
