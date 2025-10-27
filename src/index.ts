@@ -10,6 +10,7 @@ import artsRouter from "./api/art";
 import blogsRouter from "./api/blog";
 import homepageRouter from "./api/homepage";
 import adminRouter from "./api/admin";
+import usersRouter from "./api/users";
 import { signUpload } from "./api/middleware/cloudinary-url-middleware";
 import { isAuthenticated } from "./api/middleware/authentication-middleware";
 import { isAdmin } from "./api/middleware/authorization-middleware";
@@ -36,6 +37,7 @@ app.use("/api/arts", artsRouter);
 app.use("/api/blogs", blogsRouter);
 app.use("/api/homepage", homepageRouter);
 app.use("/api/admin", adminRouter);
+app.use("/api/users", usersRouter);
 // Upload signature
 app.post("/api/uploads/sign", isAuthenticated, signUpload);
 
