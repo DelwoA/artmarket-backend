@@ -7,6 +7,20 @@ import NotFoundError from "../domain/errors/not-found-error";
 import ValidationError from "../domain/errors/validation-error";
 import { getAuth } from "@clerk/express";
 
+// Helper to adjust denormalized artist counters by artist name
+async function adjustArtistCountersByName(
+  artistName: string,
+  likesDelta = 0,
+  viewsDelta = 0
+): Promise<void> {
+  if (!artistName) return;
+  const inc: Record<string, number> = {};
+  if (likesDelta) inc.totalLikes = likesDelta;
+  if (viewsDelta) inc.totalViews = viewsDelta;
+  if (Object.keys(inc).length === 0) return;
+  await Artist.updateOne({ name: artistName }, { $inc: inc });
+}
+
 export const getAllArts = async (
   req: Request,
   res: Response,
@@ -139,8 +153,30 @@ export const deleteArt = async (
   try {
     const artId = req.params.id;
 
-    // Delete the art
+    // Read the art to capture artistName, then delete
+    const art = await Art.findById(artId);
     await Art.findByIdAndDelete(artId);
+
+    // Recompute artist totals after deletion to avoid drift
+    const artistName = (art as any)?.artistName as string | undefined;
+    if (artistName) {
+      const [agg] = await Art.aggregate([
+        { $match: { artistName } },
+        {
+          $group: {
+            _id: null,
+            likesSum: { $sum: "$likes" },
+            viewsSum: { $sum: "$views" },
+          },
+        },
+      ]);
+      const likesSum = Number(agg?.likesSum ?? 0);
+      const viewsSum = Number(agg?.viewsSum ?? 0);
+      await Artist.updateOne(
+        { name: artistName },
+        { $set: { totalLikes: likesSum, totalViews: viewsSum } }
+      );
+    }
 
     // Return the response
     res.status(200).send("Art deleted successfully");
@@ -187,6 +223,14 @@ export const toggleLikeArt = async (
       ? (updated as any).likedBy.includes(userId)
       : false;
 
+    // Adjust artist totalLikes by +1 when liked, -1 when unliked
+    const likeDelta = addResult.modifiedCount ? 1 : -1;
+    await adjustArtistCountersByName(
+      String((updated as any).artistName),
+      likeDelta,
+      0
+    );
+
     res.status(200).json({ likes: updated.likes ?? 0, liked });
     return;
   } catch (error) {
@@ -209,6 +253,7 @@ export const incrementArtView = async (
     if (!updated) {
       throw new NotFoundError("Art not found");
     }
+    await adjustArtistCountersByName(String((updated as any).artistName), 0, 1);
     res.status(200).json({ views: Number(updated.views ?? 0) });
     return;
   } catch (error) {

@@ -3,7 +3,6 @@ import { z } from "zod";
 export const createArtDTO = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
-  //   TODO: Research and use accurate proper art categories
   category: z.enum([
     "Painting",
     "Sculpture",
