@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import Artist from "../infrastructure/schemas/Artist";
+import Art from "../infrastructure/schemas/Art";
 import { createArtistDTO, updateArtistDTO } from "../domain/dtos/artist";
 
 import NotFoundError from "../domain/errors/not-found-error";
@@ -59,8 +60,38 @@ export const getArtistById = async (
       throw new NotFoundError("Artist not found");
     }
 
-    // Return the response
-    res.status(200).json(artist);
+    // Aggregate totals from arts by artistName to ensure accurate legacy totals
+    const sums = await Art.aggregate([
+      { $match: { artistName: (artist as any).name } },
+      {
+        $group: {
+          _id: null,
+          likesSum: { $sum: "$likes" },
+          viewsSum: { $sum: "$views" },
+        },
+      },
+    ]);
+    const likesSum = Number(sums?.[0]?.likesSum ?? 0);
+    const viewsSum = Number(sums?.[0]?.viewsSum ?? 0);
+
+    // Persist backfilled totals if out of sync
+    if (
+      Number((artist as any).totalLikes ?? 0) !== likesSum ||
+      Number((artist as any).totalViews ?? 0) !== viewsSum
+    ) {
+      await Artist.updateOne(
+        { _id: (artist as any)._id },
+        { $set: { totalLikes: likesSum, totalViews: viewsSum } }
+      );
+    }
+
+    // Return the artist with accurate totals
+    const out = {
+      ...(artist.toObject ? artist.toObject() : (artist as any)),
+      totalLikes: likesSum,
+      totalViews: viewsSum,
+    };
+    res.status(200).json(out);
     return;
   } catch (error) {
     next(error);
