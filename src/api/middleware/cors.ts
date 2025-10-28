@@ -1,11 +1,20 @@
 import cors from "cors";
 
-const whitelist = new Set([
-  "http://localhost:5173",
-  "http://localhost:5174",
-  "http://localhost:3000",
-  "https://artmarket-frontend.vercel.app",
-]);
+// Allowlist comes from env (comma-separated), with sensible defaults for local dev
+const envOrigins = (process.env.CORS_ORIGINS || "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+const whitelist = new Set(
+  [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://localhost:3000",
+    "https://artmarket-frontend.vercel.app",
+    ...envOrigins,
+  ].filter(Boolean)
+);
 
 const corsOptions = {
   optionsSuccessStatus: 200,
